@@ -78,7 +78,10 @@ class Snake:
 
   def draw_snake(self, Map):
     location = [self.snakelist[0][0] * Map.size, self.snakelist[0][1] * Map.size]
-    pygame.draw.rect(screen, color_dict['RED'], location + [Map.size, Map.size])
+    # 머리 색을 빨갛게?
+    # pygame.draw.rect(screen, color_dict['RED'], location + [Map.size, Map.size])
+    # 몸통과 똑같이 ?
+    pygame.draw.rect(screen, color_dict['GREEN'], location + [Map.size, Map.size])
     for body in self.snakelist[1:]:
       location = [body[0] * Map.size, body[1] * Map.size]
       pygame.draw.rect(screen, color_dict['GREEN'], location + [Map.size, Map.size])
@@ -103,6 +106,8 @@ class Snake:
     # 뱀이 길어지느냐 그대로인가
     if self.ate_food == False:
       self.snakelist.pop()
+    else:
+      self.ate_food = False
     
     # 이제 바뀐 뱀 리스트를 그리드에 올려준다.
     for index, body in enumerate(self.snakelist):
@@ -120,20 +125,27 @@ class Snake:
         Map.food -= 1
         self.ate_food = True
         break
-      else:
-        self.ate_food = False
 
   def get_direction(self, Map):
+    nowheading = self.heading
     key = pygame.key.get_pressed()
     if key[pygame.K_LEFT]:
+      if nowheading == 'RIGHT':
+        return
       self.heading = 'LEFT'
     elif key[pygame.K_RIGHT]:
+      if nowheading == 'LEFT':
+        return
       self.heading = 'RIGHT'
     elif key[pygame.K_DOWN]:
+      if nowheading == 'UP':
+        return
       self.heading = 'DOWN'
     elif key[pygame.K_UP]:
+      if nowheading == 'DOWN':
+        return
       self.heading = 'UP'
-        
+    
 # 여러 함수 정의
 def init_map(Map):
   global screen, screen_width, screen_height
@@ -166,7 +178,9 @@ map_grid = [[0] * row for i in range(column)]
 food_num = 4
 head = (5, 5)
 heading = 'UP'
-speed = 3 # 1초에 움직이는 픽셀 수
+frame = 60
+speed = 5 # 1초에 움직이는 픽셀 수
+tock = 0 # tock이 frame 당 1씩 증가, tock이 frame/speed가 되면 한번 움직임
 # 0: 빈 배경/1: 파란색 먹이/2: 빨간색 머리/3: 초록색 몸체/4: 테두리?
 
 # pygame 시작, 객체 만들기
@@ -185,7 +199,7 @@ clock = pygame.time.Clock()
 
 running = True
 while running:
-  clock.tick(speed)
+  clock.tick(frame)
 
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
@@ -199,11 +213,15 @@ while running:
     Map.place_food(Snake)
   
   Map.draw_food()
-  print(Snake.snakelist)
 
   Snake.get_direction(Map)
   Snake.check_food(Map)
-  Snake.move_snake(Map)
+  if tock == frame/speed:
+    tock = 0  
+    Snake.move_snake(Map)
+    print(Snake.snakelist)
+    print(len(Snake.snakelist))
+  tock += 1
   Snake.draw_snake(Map)
 
   # 만약 몸체에 중복이 생겼다면 바로 끝
@@ -218,7 +236,7 @@ while running:
 
 
   Map.draw_spikes()
-  draw_grid(Map)
+  # draw_grid(Map)
   pygame.display.update()
 
 pygame.quit()
