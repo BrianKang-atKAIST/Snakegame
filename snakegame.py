@@ -10,8 +10,8 @@ class Map:
     self.map_grid = map_grid
     self.food_num = food_num
     self.food = self.food_num
-    self.foodlist = []
-    self.spikelist = []
+    self.foodset = set()
+    self.spikeset = set()
     self.score = 0
   
   def place_food(self, Snake):
@@ -22,35 +22,35 @@ class Map:
         food_location.append((x, y))
     for body in Snake.snakelist:
       food_location.remove(body)
-    for spike in self.spikelist:
+    for spike in self.spikeset:
       food_location.remove(spike)
     for food in range(self.food_num):
       food_xy = food_location[random.randint(0, len(food_location)-1)]
-      self.foodlist.append(food_xy)
+      self.foodset.add(food_xy)
       self.map_grid[food_xy[1]][food_xy[0]] = 1
       food_location.remove(food_xy)
 
   def draw_food(self):
-    for food in self.foodlist:
+    for food in self.foodset:
       pygame.draw.rect(screen, color_dict['BLUE'], [food[0] * Map.size, food[1] * Map.size] + [Map.size, Map.size])
 
   def print_score(self):
     pass
 
   def init_spikes(self):
-    spikelist = []
+    spikeset = set()
     for i in range(0, self.row):
       self.map_grid[0][i] = 4
       self.map_grid[self.column-1][i] = 4
-      spikelist.append((0, i))
-      spikelist.append((self.column-1, i))
+      spikeset.add((0, i))
+      spikeset.add((self.column-1, i))
     for j in range(0, self.column):
       self.map_grid[j][0] = 4
       self.map_grid[j][self.row-1] = 4
-      spikelist.append((j, 0))
-      spikelist.append((j, self.row-1))
-    self.spikelist = sorted(list(set(spikelist)))
-    print(len(self.spikelist))
+      spikeset.add((j, 0))
+      spikeset.add((j, self.row-1))
+    self.spikeset = set(spikeset)
+    print(len(self.spikeset))
   
   def draw_spikes(self):
     for i in range(1, self.row-1):
@@ -119,11 +119,11 @@ class Snake:
         Map.map_grid[body[1]][body[0]] = 3
 
   def check_food(self, Map):
-    foodlist = Map.foodlist
-    for food in Map.foodlist:
+    foodset = Map.foodset
+    for food in Map.foodset:
       if food == self.head:
-        foodlist.remove(food)
-        Map.foodlist = foodlist
+        foodset.remove(food)
+        Map.foodset = foodset
         Map.food -= 1
         self.ate_food = True
         break
@@ -218,6 +218,7 @@ while running:
 
   Snake.get_direction(Map)
   Snake.check_food(Map)
+  # frame/speed 개의 프레임이 지나면 한 번 움직임
   if tock == frame/speed:
     tock = 0  
     Snake.move_snake(Map)
@@ -231,11 +232,8 @@ while running:
     running = False
 
   # 만약 가시에 박았다면 사망
-  if Snake.head in Map.spikelist:
+  if Snake.head in Map.spikeset:
     running = False
-
-
-
 
   Map.draw_spikes()
   # draw_grid(Map)
