@@ -16,17 +16,18 @@ class Map:
   
   def place_food(self, Snake):
     self.food = self.food_num
-    food_location = [i for i in range(self.row * self.column)]
+    food_location = []
+    for x in range(0, self.column):
+      for y in range(0, self.row):
+        food_location.append((x, y))
     for body in Snake.snakelist:
-      food_location.remove(body[1]*self.row + body[0])
+      food_location.remove(body)
     for spike in self.spikelist:
-      food_location.remove(spike[1]*self.row + spike[0])
+      food_location.remove(spike)
     for food in range(self.food_num):
       food_xy = food_location[random.randint(0, len(food_location)-1)]
-      food_y = food_xy // self.row
-      food_x = food_xy % self.row
-      self.foodlist.append((food_x, food_y))
-      self.map_grid[food_y][food_x] = 1
+      self.foodlist.append(food_xy)
+      self.map_grid[food_xy[1]][food_xy[0]] = 1
       food_location.remove(food_xy)
 
   def draw_food(self):
@@ -38,17 +39,18 @@ class Map:
 
   def init_spikes(self):
     spikelist = []
-    for i in range(1, self.row):
+    for i in range(0, self.row):
       self.map_grid[0][i] = 4
       self.map_grid[self.column-1][i] = 4
       spikelist.append((0, i))
       spikelist.append((self.column-1, i))
-    for j in range(1, self.column):
+    for j in range(0, self.column):
       self.map_grid[j][0] = 4
       self.map_grid[j][self.row-1] = 4
       spikelist.append((j, 0))
       spikelist.append((j, self.row-1))
     self.spikelist = sorted(list(set(spikelist)))
+    print(len(self.spikelist))
   
   def draw_spikes(self):
     for i in range(1, self.row-1):
